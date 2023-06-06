@@ -1,0 +1,2 @@
+# mandarin
+React SNS Application
