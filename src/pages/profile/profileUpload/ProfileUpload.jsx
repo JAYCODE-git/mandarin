@@ -3,10 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 // 2.third-party library
-import axios from 'axios';
 import { useRecoilState } from 'recoil';
-import { tokenState } from '../../../recoil/atoms';
-import { useMutation } from '@tanstack/react-query';
+import { tokenState } from '../../../recoil/tokenState';
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // 3. components & assets
@@ -27,18 +25,19 @@ import {
 export const ProfileUpload = () => {
   const { account } = useParams();
   const [token] = useRecoilState(tokenState);
-  const [userName, setUserName] = useState('');
-  const [userId, setUserId] = useState('');
+  const [username, setUserName] = useState('');
+  const [accountname, setAccountName] = useState('');
   const [intro, setIntro] = useState('');
-  const [imageFile, setImageFile] = useState('');
+  const [image, setImage] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
 
   // * 입력값 핸들러
   const handleInputChange = (e, setInputChange) => {
-    if (setInputChange === setImageFile) {
-      setImageFile(e.target.files[0]);
-      console.log('file:', imageFile.name);
+    if (setInputChange === setImage) {
+      test.mutate();
+      setImage(e.target.files[0]);
+      console.log('file:', image);
     } else {
       setInputChange(e.target.value);
     }
@@ -46,67 +45,33 @@ export const ProfileUpload = () => {
 
 
   // * 이미지 업로드 API 호출
-  // imageFile의 변화를 감지해서 uploadImages함수 mutate 실행
-  useEffect(() => {
-    if (imageFile) {
-      test.mutate();
-    }
-  }, [imageFile]);
-
   // 이미지 파일 정보를 담은 FormData 객체에 imageFile을 담아서 전송
   const formData = new FormData();
-  formData.append('image', imageFile);
+  formData.append('image', image);
 
-  // // 파일에 첨부된 이미지 Api서버로 전송하고 화면에 표시
-  // const uploadImages = useMutation({
-  //   mutationKey: ['uploadImages'],
-  //   mutationFn: async () => {
-  //     const res = await axios.post(
-  //       BASE_URL + '/image/uploadfile',
-  //       formData
-  //     );
-  //     setImageUrl(BASE_URL + '/' + res.data.filename);
-  //   },
-  //   onSuccess: () => {
-  //     console.warn('요청에 성공했습니다..');
-  //   },
-  //   onError: err => {
-  //     console.warn('요청에 실패했습니다.');
-  //   },
-  //   onSettled: () => {
-  //     console.warn('요청을 실행합니다.');
-  //   },
-  // });
-
+  //! 이미지 첨부가 잘 되지 않음
   const test = useMutationHook(
     '/image/uploadfile',
     'post',
+    { formData },
     {
-      formData,
       onSuccess: (data) => {
         console.log('hahaha');
-        setImageUrl(BASE_URL + '/' + data.filename);
       }
     }
   );
 
 
   // * 프로필 업로드 API 호출
-  // 사용자 정보를 담은 data 객체
-  const data = {
-    user: {
-      username: userName,
-      accountname: userId,
-      intro: intro,
-      image: imageUrl
-    }
-  };
-
-  // 커스텀 훅 useMutations 사용
   const uploadProfile = useMutationHook(
     '/user',
     'put',
-    { data }
+    { user: { username, accountname, intro, image } },
+    {
+      onSuccess: () => {
+        console.warn('요청에 성공했습니다..');
+      }
+    },
   );
 
   // 페이지 이동
@@ -125,12 +90,17 @@ export const ProfileUpload = () => {
         </h2>
         <ProfileImg icon={img}>
           <label htmlFor="profileImg">
-            <img src={imageUrl || "http://146.56.183.55:5050/Ellipse.png"} alt="사용자 이미지" id="imagePre" />
+            <img
+              // src={imageUrl || "http://146.56.183.55:5050/Ellipse.png"}
+              src={imageUrl || "http://146.56.183.55:5050/Ellipse.png"}
+              alt="사용자 이미지"
+              id="imagePre"
+            />
           </label>
           <input
             type="file"
             id="profileImg"
-            onChange={(e) => handleInputChange(e, setImageFile)}
+            onChange={(e) => handleInputChange(e, setImage)}
           />
         </ProfileImg>
         <Fieldsets>
@@ -138,7 +108,7 @@ export const ProfileUpload = () => {
           <input
             type="text"
             id="userNameInput"
-            value={userName}
+            value={username}
             placeholder="2~10자 이내여야 합니다."
             onChange={(e) => handleInputChange(e, setUserName)}
           />
@@ -147,10 +117,10 @@ export const ProfileUpload = () => {
           <label htmlFor="userIdInput">계정 ID</label>
           <input
             type="text"
-            value={userId}
+            value={accountname}
             id="userIdInput"
             placeholder="영문, 숫자, 특수문자(,), (_)만 사용 가능합니다."
-            onChange={(e) => handleInputChange(e, setUserId)}
+            onChange={(e) => handleInputChange(e, setAccountName)}
           />
         </Fieldsets>
         <Fieldsets>

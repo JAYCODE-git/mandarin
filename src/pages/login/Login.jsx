@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import axios from 'axios';
+// import axios from 'axios';
 import { useSetRecoilState } from 'recoil';
 import { userLoginState } from '../../recoil/userLoginState';
-
+import { tokenState } from '../../recoil/tokenState';
 import { useMutationHook } from '../../hooks/useMutationHook';
 
 
@@ -16,21 +16,24 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const setUserLoginState = useSetRecoilState(userLoginState);
-  // const BASE_URL = 'https://api.mandarin.weniv.co.kr';
-  // const api = '/user/login'
+  const setUserTokenState = useSetRecoilState(tokenState);
 
   const getLogin = useMutationHook(
     '/user/login',
     'post',
+    { user: { email, password } },
     {
-      onSuccess: () => {
-        console.log('hahaha');
-        navigate('/profile/weniv_jay');
+      onSuccess: (data) => {
+        console.log('요청에 성공했습니다.');
+        //로컬스토리지 key:"token"에 token값 저장
+        console.log(data.user.token);
+        localStorage.setItem("token", data.user.token);
+        setUserLoginState(data);
+        setUserTokenState(data.token);
+        navigate(`/profile/${data.user.accountname}`);
       }
     }
   );
-
-
 
   // * 입력값 핸들러
   const handleInputChange = (e, setInputChange) => {
@@ -38,13 +41,6 @@ export const Login = () => {
   }
 
   // Email, Password 입력시 state 변경하는 Handler 함수
-  // const handleEmailChange = (e) => {
-  //   setEmail(e.target.value);
-  // };
-  // const handlePasswordChange = (e) => {
-  //   setPassword(e.target.value);
-  // };
-
   // * Login 버튼 클릭시 비동기 통신 실행
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -53,6 +49,7 @@ export const Login = () => {
       return;
     }
     getLogin.mutate();
+
   };
 
 

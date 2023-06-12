@@ -1,28 +1,31 @@
 import { BASE_URL } from '../config';
 
 import axios from 'axios';
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom';
 
 import { useRecoilState } from 'recoil';
-import { tokenState } from '../recoil/atoms';
+import { tokenState } from '../recoil/tokenState';
 
 
-export const useMutationHook = (apiUrl, method, options = {}) => {
-
+export const useMutationHook = (apiUrl, method, data = null, options = {}) => {
+  // console.log(BASE_URL + apiUrl)
   const location = useLocation();
-  console.log(location.pathname);
+  // console.log(location.pathname);
 
   const [token] = useRecoilState(tokenState);
 
   const mutations = useMutation(async () => {
     const headers = {
-      "Content-type": location.pathname === "/profile/weniv_jay/upload" ? "multipart/form-data" : "application/json"
+      'Content-type': 'application/json',
     };
+    token && (headers['Authorization'] = `Bearer ${token}`);
+
     const res = await axios({
       url: BASE_URL + apiUrl,
       method,
       headers,
+      data: data,
     });
     console.warn('요청에 성공했습니다.');
     console.table(res.data)

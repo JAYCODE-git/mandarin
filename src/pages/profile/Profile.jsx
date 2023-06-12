@@ -1,20 +1,19 @@
 import React from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useQueryHook } from '../../hooks/useQueryHook';
 
-
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const Profile = () => {
   const { account } = useParams();
 
-  // * useQueryHook을 사용해서 API 호출
+  // useQueryHook을 사용해서 API 호출
   const { data } = useQueryHook(
     `/profile/${account}`,
     'get',
+    'login'
   );
 
-  // 페이지 이동
   const location = useLocation();
   const navigate = useNavigate();
   console.log(location.pathname);

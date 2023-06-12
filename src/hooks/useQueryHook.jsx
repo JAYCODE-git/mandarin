@@ -4,31 +4,53 @@ import axios from 'axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useRecoilState } from 'recoil';
-import { tokenState } from '../recoil/atoms';
+import { tokenState } from '../recoil/tokenState';
 
-export const useQueryHook = (apiUrl, method) => {
+// export const useQueryHook = (apiUrl, method, login) => {
+//   const [token] = useRecoilState(tokenState);
+//   const queryClient = useQueryClient();
+
+// const { isLoading, error, data } = useQuery({
+//   queryKey: [apiUrl, method],
+//   queryFn: async () => {
+//     const headers = {
+//       'Content-type': 'application/json',
+//     };
+//     login && (headers['Authorization'] = `Bearer ${token}`);
+
+//     const res = await axios({
+//       url: BASE_URL + apiUrl,
+//       method: method,
+//       headers: headers,
+//     });
+//     console.warn('요청에 성공했습니다.');
+//     console.table(res.data)
+//     return res.data;
+//   },
+// });
+
+export const useQueryHook = (apiUrl, method, body = null) => {
   const [token] = useRecoilState(tokenState);
   const queryClient = useQueryClient();
 
   const { isLoading, error, data } = useQuery({
-    queryKey: [apiUrl, method],
+    queryKey: [apiUrl, method, body],
     queryFn: async () => {
       const headers = {
         'Content-type': 'application/json',
+        'Authorization': `Bearer ${token}`
       };
-      token && (headers['Authorization'] = `Bearer ${token}`);
-
       const res = await axios({
         url: BASE_URL + apiUrl,
-        method: method,
-        headers: headers,
+        method,
+        headers,
+        data: body
       });
-      console.warn('요청에 성공했습니다.');
-      console.table(res.data)
+      console.log('The request succeeded.');
+      console.log(res.data)
       return res.data;
-    },
+    }
   });
-
   if (isLoading) {
     console.warn('요청을 실행합니다.');
   }
