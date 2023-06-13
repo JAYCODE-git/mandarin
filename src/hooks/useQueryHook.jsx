@@ -46,7 +46,7 @@ export const useQueryHook = (apiUrl, method, body = null) => {
         headers,
         data: body
       });
-      console.log('The request succeeded.');
+      console.log('요청에 성공했습니다.');
       console.log(res.data)
       return res.data;
     }
